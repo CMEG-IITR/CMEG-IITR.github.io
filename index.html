@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Computational Materials Engineering Group (CMEG) IIT R</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #fafafa; color: #222;
+      transition: background 0.3s, color 0.3s;
+    }
+    header {
+      background: #003366; color: #fff; padding: 20px; text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    nav { margin-top: 10px; }
+    nav a { color: #fff; margin: 0 12px; text-decoration: none; font-weight: 500; }
+    main { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    .block {
+      border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin: 20px 0;
+      background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: background 0.3s, color 0.3s;
+    }
+    footer { background: #eee; padding: 20px; text-align: center; margin-top: 40px; color: #555; }
+
+    /* Dark mode styles */
+    body.dark { background: #121212; color: #eee; }
+    body.dark header { background: #111; color: #fff; }
+    body.dark nav a { color: #ddd; }
+    body.dark .block { background: #1e1e1e; border-color: #444; }
+    body.dark footer { background: #1e1e1e; color: #aaa; }
+
+    #toggle-btn {
+      margin-top: 10px;
+      background: #fff; color: #003366;
+      border: none; padding: 6px 12px; border-radius: 5px;
+      cursor: pointer; font-weight: bold;
+    }
+    body.dark #toggle-btn { background: #333; color: #eee; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Computational Materials Engineering Group (CMEG)</h1>
+    <h2>IIT Roorkee</h2>
+    <nav>
+      <a href="/">Home</a>
+      <a href="thermoelectric_dataset.html">Thermoelectric Dataset</a>
+    </nav>
+    <button id="toggle-btn">🌙 Dark Mode</button>
+  </header>
+
+  <main>
+    <h2>Welcome</h2>
+    <p>We are the Computational Materials Engineering Group (CMEG) at IIT Roorkee,
+       focusing on thermoelectrics, polymers, and computational design of materials.</p>
+
+    <div class="block">
+      <h3><a href="thermoelectric_dataset.html">Thermoelectric Dataset</a></h3>
+      <p>Explore curated datasets on thermoelectric materials, including Seebeck coefficient,
+         electrical conductivity, thermal conductivity, and figure of merit (ZT).</p>
+    </div>
+  </main>
+
+  <footer>
+    © <span id="year"></span> Computational Materials Engineering Group, IIT Roorkee
+  </footer>
+
+  <script>
+    // Set year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Dark mode toggle
+    const body = document.body;
+    const btn = document.getElementById('toggle-btn');
+
+    // Load saved mode
+    if (localStorage.getItem('theme') === 'dark') {
+      body.classList.add('dark');
+      btn.textContent = "☀️ Light Mode";
+    }
+
+    btn.addEventListener('click', () => {
+      body.classList.toggle('dark');
+      if (body.classList.contains('dark')) {
+        btn.textContent = "☀️ Light Mode";
+        localStorage.setItem('theme', 'dark');
+      } else {
+        btn.textContent = "🌙 Dark Mode";
+        localStorage.setItem('theme', 'light');
+      }
+    });
+  </script>
+</body>
+</html>
