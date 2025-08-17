@@ -5,7 +5,6 @@
 <title>Thermoelectric Materials Explorer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="stylesheet" href="https://cdn.datatables.net/2.0.7/css/dataTables.dataTables.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.2/css/buttons.dataTables.min.css">
 <style>
   :root {
     --bg: #fafafa;
@@ -14,6 +13,7 @@
     --header-fg: white;
     --card-bg: white;
     --pill-bg: #f1f3f5;
+    --border: #ccc;
   }
   body.dark {
     --bg: #121212;
@@ -22,7 +22,9 @@
     --header-fg: #bb86fc;
     --card-bg: #1f1f1f;
     --pill-bg: #333;
+    --border: #444;
   }
+  * { box-sizing: border-box; }
   body {
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
@@ -33,45 +35,84 @@
   header {
     background: var(--header-bg);
     color: var(--header-fg);
-    padding: 16px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 12px 16px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: space-between; align-items: center;
   }
-  header h1 { margin: 0; font-size: 1.6rem; }
-  header p { margin: 4px 0 0; font-size: 0.9rem; opacity: 0.9; }
+  header h1 { margin: 0; font-size: 1.25rem; }
+  header p  { margin: 0; font-size: 0.9rem; opacity: 0.9; }
   .dark-toggle {
-    background: none;
-    border: 1px solid var(--header-fg);
-    color: var(--header-fg);
-    padding: 6px 10px;
-    border-radius: 4px;
-    cursor: pointer;
+    background: none; border: 1px solid var(--header-fg); color: var(--header-fg);
+    padding: 6px 10px; border-radius: 4px; cursor: pointer;
   }
-  .container { display: flex; height: calc(100vh - 90px); }
-  .left-pane { flex: 2; padding: 10px; overflow: auto; }
+
+  /* Layout */
+  .container {
+    display: flex;
+    height: calc(100vh - 80px);
+    min-height: 480px;
+    overflow: hidden;
+  }
+  .left-pane {
+    flex: 2 1 60%;
+    padding: 10px;
+    overflow: auto;
+  }
+  .splitter {
+    width: 6px;
+    cursor: col-resize;
+    background: var(--pill-bg);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
   .right-pane {
-    flex: 1; background: var(--card-bg); padding: 16px; overflow: auto;
-    border-left: 1px solid #ccc; transition: transform 0.3s;
+    flex: 1 1 40%;
+    background: var(--card-bg);
+    padding: 12px;
+    overflow: auto;
+    border-left: 1px solid var(--border);
+    transition: background 0.3s, color 0.3s;
   }
-  body.dark .right-pane { border-left: 1px solid #444; }
+
+  /* Controls */
   .controls {
-    display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 14px;
-  }
-  .controls label { display: inline-flex; align-items: center; gap: 6px; }
-  .controls input, .controls select {
-    padding: 4px 6px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px;
-    background: var(--card-bg); color: var(--fg);
-  }
-  body.dark .controls input, body.dark .controls select { border: 1px solid #555; }
-  .controls button {
-    background: var(--header-bg); color: var(--header-fg); border: none; border-radius: 4px;
-    padding: 6px 12px; cursor: pointer; font-size: 0.9rem;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 12px;
   }
   .pill { background: var(--pill-bg); border-radius: 999px; padding: 4px 10px; font-size: 0.85rem; }
+  .field { grid-column: span 4; display: flex; gap: 6px; align-items: center; }
+  .field label { white-space: nowrap; font-size: 0.9rem; }
+  .field input, .field select {
+    flex: 1 1 auto;
+    padding: 6px 8px; font-size: 0.9rem;
+    border: 1px solid var(--border); border-radius: 4px;
+    background: var(--card-bg); color: var(--fg);
+  }
+  .field-checkbox { grid-column: span 3; display: flex; gap: 8px; align-items: center; }
+  .actions { grid-column: span 12; display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    background: var(--header-bg); color: var(--header-fg);
+    border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 0.9rem;
+  }
+
+  /* Table details */
   .prop-table { width: 100%; border-collapse: collapse; }
-  .prop-table td { border-bottom: 1px solid #ccc; padding: 4px; vertical-align: top; }
-  body.dark .prop-table td { border-bottom: 1px solid #444; }
+  .prop-table td { border-bottom: 1px solid var(--border); padding: 4px; vertical-align: top; }
+
+  /* Mobile / small screens */
+  @media (max-width: 900px) {
+    .container { flex-direction: column; height: auto; }
+    .splitter { display: none; }
+    .left-pane, .right-pane { flex: none; height: auto; max-height: none; }
+    .right-pane { border-left: none; border-top: 1px solid var(--border); }
+    .controls { grid-template-columns: repeat(6, 1fr); }
+    .field { grid-column: span 6; }
+    .field-checkbox { grid-column: span 3; }
+    .actions { grid-column: span 6; }
+  }
 </style>
 </head>
 <body>
@@ -81,52 +122,55 @@
     <h1>Thermoelectric Materials Explorer</h1>
     <p>Click a row to view all details</p>
   </div>
-  <button class="dark-toggle" onclick="toggleDarkMode()">Toggle Dark</button>
+  <button class="dark-toggle" onclick="document.body.classList.toggle('dark')">Toggle Dark</button>
 </header>
 
-<div class="container">
-  <div class="left-pane">
+<div class="container" id="container">
+  <div class="left-pane" id="leftPane">
     <div class="controls">
       <span class="pill">Client-side only</span>
 
-      <label>Filter Material:
+      <div class="field">
+        <label for="filter-material">Material</label>
         <input type="text" id="filter-material" placeholder="e.g. Bi2Te3">
-      </label>
+      </div>
 
-      <label>
-        <input type="checkbox" id="only-zt"> Show only rows with ZT
-      </label>
+      <!-- New: text search like 'Material' -->
+      <div class="field">
+        <label for="filter-compound">Compound Type</label>
+        <input type="text" id="filter-compound" placeholder="e.g. Half-Heusler">
+      </div>
 
-      <!-- NEW: Compound Type filter -->
-      <label id="compound-type-wrap" style="display:none;">
-        Compound Type:
-        <select id="compound-type">
-          <option value="">All</option>
-        </select>
-      </label>
+      <div class="field">
+        <label for="filter-structure">Crystal Structure</label>
+        <input type="text" id="filter-structure" placeholder="e.g. Cubic">
+      </div>
 
-      <!-- NEW: Crystal Structure filter -->
-      <label id="crystal-structure-wrap" style="display:none;">
-        Crystal Structure:
-        <select id="crystal-structure">
-          <option value="">All</option>
-        </select>
-      </label>
+      <div class="field-checkbox">
+        <input type="checkbox" id="only-zt">
+        <label for="only-zt">Only rows with ZT</label>
+      </div>
 
-      <label>Rows to load:
+      <div class="field">
+        <label for="limit">Rows</label>
         <select id="limit">
           <option value="0">All</option>
           <option value="1000">1,000</option>
           <option value="5000" selected>5,000</option>
           <option value="10000">10,000</option>
         </select>
-      </label>
+      </div>
 
-      <button id="reload">Reload</button>
+      <div class="actions">
+        <button id="reload" class="btn">Reload</button>
+      </div>
     </div>
 
     <table id="thermoTable" class="display" style="width:100%"></table>
   </div>
+
+  <!-- Draggable splitter (desktop) -->
+  <div class="splitter" id="splitter" title="Drag to resize"></div>
 
   <div class="right-pane" id="detailsPane">
     <h2>Details</h2>
@@ -136,18 +180,11 @@
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/2.0.7/js/dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/3.0.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.html5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script>
   let table;
 
-  function toggleDarkMode() {
-    document.body.classList.toggle('dark');
-  }
-
-  // Helper: find a key by trying several candidates (case-insensitive)
+  // Find a key by trying candidates (case-insensitive)
   function findKey(keys, candidates) {
     const lower = new Map(keys.map(k => [k.toLowerCase(), k]));
     for (const c of candidates) {
@@ -165,26 +202,35 @@
     return { keys, columns };
   }
 
-  function uniqueSorted(values) {
-    return Array.from(new Set(values.filter(v => v !== null && v !== undefined && String(v).trim() !== "")))
-      .map(String)
-      .sort((a,b) => a.localeCompare(b));
-  }
-
-  function populateSelect(selectEl, values) {
-    selectEl.innerHTML = '<option value="">All</option>' +
-      values.map(v => `<option value="${v.replace(/"/g, '&quot;')}">${v}</option>`).join('');
-  }
-
   function showDetails(rowData) {
     const pane = document.getElementById('detailsPane');
-    let html = `<h2>${rowData.material || 'Unknown Material'}</h2>`;
-    html += `<table class="prop-table">`;
+    let title = rowData.material || rowData.Material || rowData.name || rowData.compound || 'Unknown Material';
+    let html = `<h2>${title}</h2><table class="prop-table">`;
     for (const [key, value] of Object.entries(rowData)) {
       html += `<tr><td><b>${key}</b></td><td>${value ?? ''}</td></tr>`;
     }
     html += `</table>`;
     pane.innerHTML = html;
+  }
+
+  // Sort helper: doi_key descending (numeric or string-aware)
+  function sortByDoiDesc(arr, doiKey) {
+    if (!doiKey) return arr;
+    const copy = arr.slice();
+    copy.sort((a, b) => {
+      const A = a[doiKey], B = b[doiKey];
+      if (A == null && B == null) return 0;
+      if (A == null) return 1; // nulls last
+      if (B == null) return -1;
+
+      // Try numeric compare first
+      const nA = Number(A), nB = Number(B);
+      if (!Number.isNaN(nA) && !Number.isNaN(nB)) return nB - nA;
+
+      // Fallback: string descending (locale aware)
+      return String(B).localeCompare(String(A), undefined, { numeric: true, sensitivity: 'base' });
+    });
+    return copy;
   }
 
   async function loadAndRender() {
@@ -196,79 +242,58 @@
     const res = await fetch('data.json');
     let data = await res.json();
 
+    // Limit rows
     const limit = parseInt(document.getElementById('limit').value, 10);
     if (limit > 0 && data.length > limit) data = data.slice(0, limit);
 
+    // Build columns and detect important keys
     const { keys, columns } = buildColumnsFromUnion(data);
+    const matKey  = findKey(keys, ['material','materials','compound','name']);
+    const ztKey   = findKey(keys, ['ZT','zt','figure_of_merit','figure-of-merit']);
+    const compKey = findKey(keys, ['compound_type','Compound_Type','compoundType','type']);
+    const cryKey  = findKey(keys, ['crystal_structure','Crystal_Structure','structure','crystalStructure']);
+    const doiKey  = findKey(keys, ['doi_key','DOI_key','doiKey','doi-index','index']);
 
-    // Column indexes
-    const matKey = findKey(keys, ['material', 'materials', 'compound', 'name']);
-    const ztKey  = findKey(keys, ['ZT', 'zt', 'figure_of_merit', 'figure-of-merit']);
-    const compTypeKey = findKey(keys, ['compound_type','Compound_Type','compoundType','type']);
-    const crystKey    = findKey(keys, ['crystal_structure','Crystal_Structure','structure','crystalStructure']);
+    // Sort by doi_key descending (if present) BEFORE DataTable
+    data = sortByDoiDesc(data, doiKey);
 
-    const matColIdx = matKey ? keys.indexOf(matKey) : -1;
-    const ztColIdx  = ztKey  ? keys.indexOf(ztKey)   : -1;
-    const compTypeColIdx = compTypeKey ? keys.indexOf(compTypeKey) : -1;
-    const crystColIdx    = crystKey    ? keys.indexOf(crystKey)    : -1;
-
-    // Build table
+    // Init DataTable (no CSV buttons)
     table = new DataTable('#thermoTable', {
       data,
       columns,
       pageLength: 25,
       deferRender: true,
-      autoWidth: false,
-      layout: {
-        topStart: { buttons: [{ extend: 'csvHtml5', text: 'Download CSV' }] }
-      }
+      autoWidth: false
     });
 
-    // Material text filter
-    document.getElementById('filter-material').oninput = () => {
-      if (matColIdx >= 0) table.column(matColIdx)
-        .search(document.getElementById('filter-material').value)
-        .draw();
+    // Column indexes for filtering
+    const matColIdx  = matKey  ? keys.indexOf(matKey)  : -1;
+    const ztColIdx   = ztKey   ? keys.indexOf(ztKey)   : -1;
+    const compColIdx = compKey ? keys.indexOf(compKey) : -1;
+    const cryColIdx  = cryKey  ? keys.indexOf(cryKey)  : -1;
+
+    // Text filters (material, compound type, crystal structure)
+    const materialInput = document.getElementById('filter-material');
+    const compoundInput = document.getElementById('filter-compound');
+    const structureInput = document.getElementById('filter-structure');
+
+    materialInput.oninput = () => {
+      if (matColIdx >= 0) table.column(matColIdx).search(materialInput.value).draw();
+    };
+    compoundInput.oninput = () => {
+      if (compColIdx >= 0) table.column(compColIdx).search(compoundInput.value).draw();
+    };
+    structureInput.oninput = () => {
+      if (cryColIdx >= 0) table.column(cryColIdx).search(structureInput.value).draw();
     };
 
     // ZT presence filter
     document.getElementById('only-zt').onchange = () => {
       if (ztColIdx < 0) return;
-      table.column(ztColIdx)
-        .search(document.getElementById('only-zt').checked ? "\\S" : "", true, false)
-        .draw();
+      table.column(ztColIdx).search(
+        document.getElementById('only-zt').checked ? "\\S" : "", true, false
+      ).draw();
     };
-
-    // Populate and wire Compound Type filter
-    if (compTypeColIdx >= 0) {
-      const wrap = document.getElementById('compound-type-wrap');
-      const sel  = document.getElementById('compound-type');
-      const values = uniqueSorted(data.map(r => r[compTypeKey]));
-      if (values.length) {
-        populateSelect(sel, values);
-        wrap.style.display = '';
-        sel.onchange = () => {
-          const v = sel.value;
-          // exact match with regex anchors
-          table.column(compTypeColIdx).search(v ? `^${v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$` : "", true, false).draw();
-        };
-      }
-    }
-
-    // Populate and wire Crystal Structure filter
-    if (crystColIdx >= 0) {
-      const wrap = document.getElementById('crystal-structure-wrap');
-      const sel  = document.getElementById('crystal-structure');
-      const values = uniqueSorted(data.map(r => r[crystKey]));
-      if (values.length) {
-        populateSelect(sel, values);
-        wrap.style.display = '';
-        sel.onchange = () => {
-          const v = sel.value;
-          table.column(crystColIdx).search(v ? `^${v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$` : "", true, false).draw();
-        };
-      }
-    }
 
     // Row click → details pane
     $('#thermoTable tbody').on('click', 'tr', function () {
@@ -279,6 +304,49 @@
 
   document.getElementById('reload').onclick = loadAndRender;
   loadAndRender();
+
+  // ====== Resizable splitter (desktop) ======
+  (function enableSplitter(){
+    const container = document.getElementById('container');
+    const left = document.getElementById('leftPane');
+    const splitter = document.getElementById('splitter');
+
+    let dragging = false;
+    let startX = 0;
+    let startWidth = 0;
+
+    const isMobile = () => window.matchMedia('(max-width: 900px)').matches;
+
+    const onMouseDown = (e) => {
+      if (isMobile()) return; // no splitter on mobile
+      dragging = true;
+      startX = e.clientX;
+      startWidth = left.getBoundingClientRect().width;
+      document.body.style.userSelect = 'none';
+    };
+    const onMouseMove = (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const newWidth = Math.max(260, startWidth + dx); // min 260px
+      // Convert to flex-basis percentage relative to container width
+      const total = container.getBoundingClientRect().width;
+      const pct = Math.min(85, Math.max(25, (newWidth / total) * 100)); // clamp 25%–85%
+      left.style.flex = `0 0 ${pct}%`;
+    };
+    const onMouseUp = () => {
+      dragging = false;
+      document.body.style.userSelect = '';
+    };
+
+    splitter.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
+    // Touch support
+    splitter.addEventListener('touchstart', (e) => { onMouseDown(e.touches[0]); }, { passive: true });
+    window.addEventListener('touchmove', (e) => { onMouseMove(e.touches[0]); }, { passive: false });
+    window.addEventListener('touchend', onMouseUp);
+  })();
 </script>
 </body>
 </html>
