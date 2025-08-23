@@ -1,97 +1,413 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Computational Materials Engineering Group (CMEG) IIT R</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      margin: 0; padding: 0;
-      background: #fafafa; color: #222;
-      transition: background 0.3s, color 0.3s;
-    }
-    header {
-      background: #003366; color: #fff; padding: 20px; text-align: center;
-      display: flex; flex-direction: column; align-items: center;
-    }
-    nav { margin-top: 10px; }
-    nav a { color: #fff; margin: 0 12px; text-decoration: none; font-weight: 500; }
-    main { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-    .block {
-      border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin: 20px 0;
-      background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      transition: background 0.3s, color 0.3s;
-    }
-    footer { background: #eee; padding: 20px; text-align: center; margin-top: 40px; color: #555; }
+<meta charset="UTF-8" />
+<title>Thermoelectric Materials Explorer — Enhanced</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    /* Dark mode styles */
-    body.dark { background: #121212; color: #eee; }
-    body.dark header { background: #111; color: #fff; }
-    body.dark nav a { color: #ddd; }
-    body.dark .block { background: #1e1e1e; border-color: #444; }
-    body.dark footer { background: #1e1e1e; color: #aaa; }
+<!-- DataTables core + Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.7/css/dataTables.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.2/css/buttons.dataTables.min.css">
 
-    #toggle-btn {
-      margin-top: 10px;
-      background: #fff; color: #003366;
-      border: none; padding: 6px 12px; border-radius: 5px;
-      cursor: pointer; font-weight: bold;
-    }
-    body.dark #toggle-btn { background: #333; color: #eee; }
-  </style>
+<style>
+  :root {
+    --bg: #fafafa;
+    --fg: #1f2937;
+    --header-bg: #0f172a;
+    --header-fg: #e2e8f0;
+    --accent: #2563eb;
+    --card-bg: #ffffff;
+    --pill-bg: #f1f5f9;
+    --border: #e5e7eb;
+    --shadow: 0 8px 24px rgba(0,0,0,0.08);
+
+    /* Dropdown (colvis) */
+    --menu-bg: #ffffff;
+    --menu-fg: #111827;
+    --menu-border: #e5e7eb;
+    --menu-hover: #eef2ff;
+    --menu-check: #2563eb;
+  }
+  body.dark {
+    --bg: #0b0f14;
+    --fg: #e5e7eb;
+    --header-bg: #0b0f14;
+    --header-fg: #93c5fd;
+    --accent: #60a5fa;
+    --card-bg: #121820;
+    --pill-bg: #111827;
+    --border: #1f2937;
+    --shadow: 0 8px 24px rgba(0,0,0,0.35);
+
+    --menu-bg: #0f172a;
+    --menu-fg: #e5e7eb;
+    --menu-border: #1f2937;
+    --menu-hover: #1e293b;
+    --menu-check: #93c5fd;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    transition: background 0.3s, color 0.3s;
+    line-height: 1.45;
+  }
+  header {
+    position: sticky; top: 0; z-index: 20;
+    background: linear-gradient(180deg, var(--header-bg), #0b1220 120%);
+    color: var(--header-fg);
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  header .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 1.15rem; letter-spacing: 0.2px; }
+  header p  { margin: 0; font-size: 0.9rem; opacity: 0.85; }
+  .dark-toggle {
+    background: transparent; border: 1px solid var(--header-fg); color: var(--header-fg);
+    padding: 6px 10px; border-radius: 999px; cursor: pointer; font-weight: 500;
+  }
+
+  /* Layout: default left pane 22% + draggable splitter */
+  .container {
+    display: grid;
+    grid-template-columns: 22% 8px 1fr; /* default 22% */
+    height: calc(100vh - 72px);
+  }
+  .left-pane { padding: 12px; overflow: auto; }
+  .splitter {
+    background: var(--pill-bg);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    cursor: col-resize;
+  }
+  .right-pane { background: var(--card-bg); padding: 14px; overflow: auto; border-left: 1px solid var(--border); }
+  .right-pane h2 { margin-top: 0; }
+
+  /* Panels & controls */
+  .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+  .controls { display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; margin-bottom: 12px; padding: 10px; }
+  .pill { background: var(--pill-bg); border-radius: 999px; padding: 6px 12px; font-size: 0.85rem; }
+  .field { grid-column: span 4; display: flex; gap: 8px; align-items: center; }
+  .field label { font-size: 0.9rem; white-space: nowrap; }
+  .field input { flex: 1 1 auto; padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px; }
+  .actions { grid-column: span 12; display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+
+  /* Table */
+  table.dataTable tbody tr:hover { background: rgba(37,99,235,0.08); cursor: pointer; }
+
+  /* Details */
+  .prop-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  .prop-table td { border-bottom: 1px solid var(--border); padding: 6px; }
+
+  /* DataTables Buttons: Column visibility menu (light + dark) */
+  .dt-button-collection {
+    background: var(--menu-bg) !important;
+    color: var(--menu-fg) !important;
+    border: 1px solid var(--menu-border) !important;
+    box-shadow: var(--shadow) !important;
+    min-width: 240px;
+    z-index: 1000; /* above table */
+  }
+  .dt-button-collection .dt-button {
+    background: transparent !important;
+    border: 0 !important;
+    color: var(--menu-fg) !important;
+    text-align: left;
+    width: 100%;
+  }
+  .dt-button-collection .dt-button:hover {
+    background: var(--menu-hover) !important;
+  }
+  .dt-button-active:after,
+  .buttons-columnVisibility.active:after {
+    content: " ✓";
+    color: var(--menu-check);
+    font-weight: 700;
+  }
+
+  footer { background: var(--card-bg); border-top: 1px solid var(--border); padding: 16px; font-size: 0.85rem; }
+
+  @media(max-width: 980px){
+    .container{grid-template-columns:1fr; height: auto;}
+    .splitter{display:none;}
+  }
+</style>
 </head>
 <body>
-  <header>
-    <h1>Computational Materials Engineering Group (CMEG)</h1>
-    <h2>IIT Roorkee</h2>
-    <nav>
-      <a href="/">Home</a>
-      <a href="thermoelectric_dataset">Thermoelectric Dataset</a>
-    </nav>
-    <button id="toggle-btn">🌙 Dark Mode</button>
-  </header>
-
-  <main>
-    <h2>Welcome</h2>
-    <p>We are the Computational Materials Engineering Group (CMEG) at IIT Roorkee,
-       focusing on thermoelectrics, polymers, and computational design of materials.</p>
-
-    <div class="block">
-      <h3><a href="thermoelectric_dataset.html">Thermoelectric Dataset</a></h3>
-      <p>Explore curated datasets on thermoelectric materials, including Seebeck coefficient,
-         electrical conductivity, thermal conductivity, and figure of merit (ZT).</p>
+<header>
+  <div class="row">
+    <div>
+      <h1>Thermoelectric Materials Explorer</h1>
+      <p>Filter, inspect, and export your dataset. Click a row to see details.</p>
     </div>
-  </main>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="dark-toggle" id="prefersToggle">Auto</button>
+      <button class="dark-toggle" onclick="document.body.classList.toggle('dark')">Toggle Dark</button>
+    </div>
+  </div>
+</header>
 
-  <footer>
-    © <span id="year"></span> Computational Materials Engineering Group, IIT Roorkee
-  </footer>
+<div class="container" id="container">
+  <div class="left-pane">
+    <div class="panel controls">
+      <span class="pill">Filters</span>
+      <div class="field"><label for="filter-material">Material</label><input type="text" id="filter-material" placeholder="e.g. Bi2Te3"></div>
+      <div class="field"><label for="filter-compound">Compound</label><input type="text" id="filter-compound" placeholder="e.g. Half-Heusler"></div>
+      <div class="field"><label for="filter-structure">Structure</label><input type="text" id="filter-structure" placeholder="e.g. Cubic"></div>
 
-  <script>
-    // Set year
-    document.getElementById('year').textContent = new Date().getFullYear();
+      <div class="field"><label>ZT Range</label><input type="number" id="zt-min" placeholder="min" step="any"><input type="number" id="zt-max" placeholder="max" step="any"></div>
+      <div class="field"><label>σ Range</label><input type="number" id="sigma-min" placeholder="min" step="any"><input type="number" id="sigma-max" placeholder="max" step="any"></div>
+      <div class="field"><label>κ Range</label><input type="number" id="k-min" placeholder="min" step="any"><input type="number" id="k-max" placeholder="max" step="any"></div>
 
-    // Dark mode toggle
-    const body = document.body;
-    const btn = document.getElementById('toggle-btn');
+      <div class="actions">
+        <button id="reload" class="btn">Reload</button>
+        <button id="downloadFiltered" class="btn">Download Filtered</button>
+        <button id="downloadFull" class="btn">Download Full</button>
+      </div>
+    </div>
 
-    // Load saved mode
-    if (localStorage.getItem('theme') === 'dark') {
-      body.classList.add('dark');
-      btn.textContent = "☀️ Light Mode";
+    <div class="panel" style="padding:10px;">
+      <table id="thermoTable" class="display" style="width:100%"></table>
+    </div>
+  </div>
+
+  <!-- Draggable splitter -->
+  <div class="splitter" id="splitter" title="Drag to resize"></div>
+
+  <div class="right-pane" id="detailsPane">
+    <h2>Details</h2>
+    <p>Select a row to view details.</p>
+  </div>
+</div>
+
+<!-- JS -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/2.0.7/js/dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.colVis.min.js"></script>
+
+<script>
+let table, originalData = [];
+
+/* ---------- Helpers ---------- */
+function findKey(keys, candidates){
+  const lower = new Map(keys.map(k => [k.toLowerCase(), k]));
+  for (const c of candidates){
+    const hit = lower.get(c.toLowerCase());
+    if (hit) return hit;
+  }
+  return null;
+}
+function buildColumnsFromUnion(data){
+  const keys = [...new Set(data.flatMap(r => Object.keys(r)))];
+  const columns = keys.map(k => ({ title: k, data: r => (r[k] ?? "") }));
+  return { keys, columns };
+}
+function escapeCSV(s){
+  const needsQuote = /[",\n]/.test(s);
+  let out = String(s).replace(/"/g, '""');
+  return needsQuote ? `"${out}"` : out;
+}
+function arrayToCSV(rows, header){
+  const head = header.map(escapeCSV).join(',');
+  const body = rows.map(r => header.map(k => escapeCSV(
+    typeof r[k] === 'object' && r[k] !== null ? JSON.stringify(r[k]) : (r[k] ?? '')
+  )).join(',')).join('\n');
+  return head + '\n' + body;
+}
+function download(name, text){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type:'text/csv;charset=utf-8;'}));
+  a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 0);
+}
+function showDetails(r){
+  const title = r.material || r.Material || r.name || r.compound || 'Unknown';
+  let html = `<h2>${title}</h2><table class="prop-table">`;
+  for (const [k,v] of Object.entries(r)){
+    let cell = v;
+    if (/^doi/i.test(k) || k === 'DOI' || k === 'doi'){
+      const doi = String(v||'').trim();
+      if (doi){
+        const href = doi.startsWith('http') ? doi : `https://doi.org/${doi}`;
+        cell = `<a href="${href}" target="_blank" rel="noopener">${doi}</a>`;
+      }
+    }
+    html += `<tr><td><b>${k}</b></td><td>${cell ?? ''}</td></tr>`;
+  }
+  html += `</table>`;
+  document.getElementById('detailsPane').innerHTML = html;
+}
+
+// Extract all numeric values from a field: arrays, JSON-like strings, or "a | b | c"
+function extractNumbers(raw){
+  if (raw == null) return [];
+  if (Array.isArray(raw)) return raw.map(extractNumbers).flat();
+  if (typeof raw === 'object') raw = JSON.stringify(raw);
+  const s = String(raw);
+  const parts = s.split(/\s*[|;,]\s*/);
+  const out = [];
+  for (const p of parts){
+    const m = p.match(/[+-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][+-]?\d+)?/);
+    if (m) out.push(parseFloat(m[0]));
+  }
+  return out;
+}
+
+/* ---------- Load + render ---------- */
+async function loadAndRender(){
+  if (table){
+    table.destroy();
+    document.getElementById('thermoTable').innerHTML = "";
+  }
+
+  const res = await fetch('data.json');
+  originalData = await res.json();
+
+  const { keys, columns } = buildColumnsFromUnion(originalData);
+
+  table = new DataTable('#thermoTable', {
+    data: originalData,
+    columns,
+    pageLength: 25,
+    deferRender: true,
+    autoWidth: false,
+    dom: 'Bfrtip',
+    buttons: [{ extend: 'colvis', text: 'Column visibility' }]
+  });
+
+  // Text filters
+  const matCol = keys.indexOf(findKey(keys, ['material','materials','compound','name']));
+  const compCol = keys.indexOf(findKey(keys, ['compound_type','Compound_Type','compoundType','type']));
+  const cryCol  = keys.indexOf(findKey(keys, ['crystal_structure','Crystal_Structure','structure','crystalStructure']));
+
+  const materialInput = document.getElementById('filter-material');
+  const compoundInput = document.getElementById('filter-compound');
+  const structureInput = document.getElementById('filter-structure');
+
+  const debounce = (fn, t=200)=>{ let id; return (...a)=>{ clearTimeout(id); id=setTimeout(()=>fn(...a), t); } };
+  const applyMaterial  = debounce(()=>{ if (matCol >= 0) table.column(matCol).search(materialInput.value).draw(); });
+  const applyCompound  = debounce(()=>{ if (compCol >= 0) table.column(compCol).search(compoundInput.value).draw(); });
+  const applyStructure = debounce(()=>{ if (cryCol  >= 0) table.column(cryCol ).search(structureInput.value).draw(); });
+
+  materialInput.oninput = applyMaterial;
+  compoundInput.oninput = applyCompound;
+  structureInput.oninput = applyStructure;
+
+  // Row click → details
+  $('#thermoTable tbody').on('click', 'tr', function(){
+    const d = table.row(this).data();
+    if (d) showDetails(d);
+  });
+
+  // CSV exports
+  document.getElementById('downloadFiltered').onclick = () => {
+    const rows = table.rows({ search: 'applied' }).data().toArray();
+    download(`thermo_filtered_${rows.length}.csv`, arrayToCSV(rows, keys));
+  };
+  document.getElementById('downloadFull').onclick = () => {
+    download(`thermo_full_${originalData.length}.csv`, arrayToCSV(originalData, keys));
+  };
+
+  // --- Numeric range filters for ZT, σ, κ ---
+  function applyRange(){ table.draw(); }
+  ['zt-min','zt-max','sigma-min','sigma-max','k-min','k-max'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.oninput = applyRange;
+  });
+
+  // Global filter hook
+  $.fn.dataTable.ext.search.push(function(settings, data, rowIdx){
+    if (!table || settings.nTable !== table.table().node()) return true;
+
+    const row = table.row(rowIdx).data();
+
+    const ztMin = document.getElementById('zt-min')?.value ?? '';
+    const ztMax = document.getElementById('zt-max')?.value ?? '';
+    const sigMin = document.getElementById('sigma-min')?.value ?? '';
+    const sigMax = document.getElementById('sigma-max')?.value ?? '';
+    const kMin   = document.getElementById('k-min')?.value ?? '';
+    const kMax   = document.getElementById('k-max')?.value ?? '';
+
+    function within(values, minStr, maxStr){
+      const min = minStr === '' ? null : parseFloat(minStr);
+      const max = maxStr === '' ? null : parseFloat(maxStr);
+      if (min==null && max==null) return true;           // no constraint
+      if (!values || values.length === 0) return false;  // constrained but no data
+      for (const v of values){
+        if (v == null || Number.isNaN(v)) continue;
+        if ((min==null || v >= min) && (max==null || v <= max)) return true; // any value in range passes
+      }
+      return false;
     }
 
-    btn.addEventListener('click', () => {
-      body.classList.toggle('dark');
-      if (body.classList.contains('dark')) {
-        btn.textContent = "☀️ Light Mode";
-        localStorage.setItem('theme', 'dark');
-      } else {
-        btn.textContent = "🌙 Dark Mode";
-        localStorage.setItem('theme', 'light');
-      }
-    });
-  </script>
+    const ztVals  = extractNumbers(row.ZT ?? row.zt ?? row.figure_of_merit ?? row['figure-of-merit']);
+    const sigVals = extractNumbers(row.sigma ?? row['σ'] ?? row.electrical_conductivity ?? row.conductivity);
+    const kVals   = extractNumbers(row.k ?? row['κ'] ?? row.thermal_conductivity);
+
+    return within(ztVals,  ztMin, ztMax)
+        && within(sigVals, sigMin, sigMax)
+        && within(kVals,   kMin,   kMax);
+  });
+}
+
+/* ---------- Dark mode auto ---------- */
+(function(){
+  const btn = document.getElementById('prefersToggle');
+  let auto = true;
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+  function apply(){ document.body.classList.toggle('dark', auto ? media.matches : document.body.classList.contains('dark')); }
+  media.addEventListener?.('change', apply);
+  btn.onclick = ()=>{ auto = !auto; btn.textContent = auto ? 'Auto' : 'Manual'; apply(); };
+  apply();
+})();
+
+/* ---------- Splitter (drag to resize left pane) ---------- */
+(function enableSplitter(){
+  const container = document.getElementById('container');
+  const left = container.children[0];
+  const splitter = document.getElementById('splitter');
+
+  let dragging = false, startX = 0, startWidth = 0;
+  const isMobile = () => window.matchMedia('(max-width: 980px)').matches;
+
+  const onMouseDown = (e) => {
+    if (isMobile()) return;
+    dragging = true; startX = e.clientX; startWidth = left.getBoundingClientRect().width;
+    document.body.style.userSelect = 'none';
+  };
+  const onMouseMove = (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    const newWidth = Math.max(240, startWidth + dx);
+    const total = container.getBoundingClientRect().width;
+    const pct = Math.min(85, Math.max(15, (newWidth / total) * 100)); // clamp 15–85%
+    container.style.gridTemplateColumns = `${pct}% 8px ${100 - pct}%`;
+  };
+  const onMouseUp = () => { dragging = false; document.body.style.userSelect = ''; };
+
+  splitter.addEventListener('mousedown', onMouseDown);
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+
+  splitter.addEventListener('touchstart', (e) => { onMouseDown(e.touches[0]); }, { passive: true });
+  window.addEventListener('touchmove', (e) => { onMouseMove(e.touches[0]); }, { passive: false });
+  window.addEventListener('touchend', onMouseUp);
+})();
+
+/* ---------- Boot ---------- */
+document.getElementById('reload').onclick = loadAndRender;
+loadAndRender();
+</script>
+
+<footer>
+  <p>Data derived from Elsevier, RSC, and Springer content via text and data mining.<br>
+  © Some rights reserved. Academic research purposes only.</p>
+</footer>
 </body>
 </html>
