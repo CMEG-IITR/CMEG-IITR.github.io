@@ -226,14 +226,6 @@ function showDetails(r){
   const title = r.material || r.Material || r.name || r.compound || 'Unknown';
   let html = `<h2>${title}</h2><table class="prop-table">`;
   for (const [k,v] of Object.entries(r)){
-    let cell = v;
-    if (/^doi/i.test(k) || k === 'DOI' || k === 'doi'){
-      const doi = String(v||'').trim();
-      if (doi){
-        const href = doi.startsWith('http') ? doi : `https://doi.org/${doi}`;
-        cell = `<a href="${href}" target="_blank" rel="noopener">${doi}</a>`;
-      }
-    }
     html += `<tr><td><b>${k}</b></td><td>${cell ?? ''}</td></tr>`;
   }
   html += `</table>`;
