@@ -222,15 +222,16 @@ function download(name, text){
   a.download = name; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href), 0);
 }
-function showDetails(r){
+function showDetails(r) {
   const title = r.material || r.Material || r.name || r.compound || 'Unknown';
   let html = `<h2>${title}</h2><table class="prop-table">`;
-  for (const [k,v] of Object.entries(r)){
-    html += `<tr><td><b>${k}</b></td><td>${cell ?? ''}</td></tr>`;
+  for (const [k, v] of Object.entries(r)) {
+    html += `<tr><td><b>${k}</b></td><td>${v ?? ''}</td></tr>`;
   }
   html += `</table>`;
   document.getElementById('detailsPane').innerHTML = html;
 }
+
 
 // Extract all numeric values from a field: arrays, JSON-like strings, or "a | b | c"
 function extractNumbers(raw){
