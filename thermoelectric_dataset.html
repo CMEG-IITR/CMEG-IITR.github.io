@@ -232,8 +232,7 @@ function showDetails(r) {
   document.getElementById('detailsPane').innerHTML = html;
 }
 
-
-// Extract all numeric values from a field: arrays, JSON-like strings, or "a | b | c"
+// Extract all numeric values from a field
 function extractNumbers(raw){
   if (raw == null) return [];
   if (Array.isArray(raw)) return raw.map(extractNumbers).flat();
@@ -258,16 +257,21 @@ async function loadAndRender(){
   const res = await fetch('data.json');
   originalData = await res.json();
 
-  const { keys, columns } = buildColumnsFromUnion(originalData);
+  // Reverse order: last → first
+  const reversedData = originalData.slice().reverse();
+
+  const { keys, columns } = buildColumnsFromUnion(reversedData);
 
   table = new DataTable('#thermoTable', {
-    data: originalData,
+    data: reversedData,
     columns,
     pageLength: 25,
     deferRender: true,
     autoWidth: false,
     dom: 'Bfrtip',
-    buttons: [{ extend: 'colvis', text: 'Column visibility' }]
+    buttons: [{ extend: 'colvis', text: 'Column visibility' }],
+    order: [],       // no initial sort
+    ordering: false  // disable sorting controls/icons
   });
 
   // Text filters
@@ -294,13 +298,13 @@ async function loadAndRender(){
     if (d) showDetails(d);
   });
 
-  // CSV exports
+  // CSV exports (also reversed)
   document.getElementById('downloadFiltered').onclick = () => {
     const rows = table.rows({ search: 'applied' }).data().toArray();
     download(`thermo_filtered_${rows.length}.csv`, arrayToCSV(rows, keys));
   };
   document.getElementById('downloadFull').onclick = () => {
-    download(`thermo_full_${originalData.length}.csv`, arrayToCSV(originalData, keys));
+    download(`thermo_full_${originalData.length}.csv`, arrayToCSV(reversedData, keys));
   };
 
   // --- Numeric range filters for ZT, σ, κ ---
@@ -326,11 +330,11 @@ async function loadAndRender(){
     function within(values, minStr, maxStr){
       const min = minStr === '' ? null : parseFloat(minStr);
       const max = maxStr === '' ? null : parseFloat(maxStr);
-      if (min==null && max==null) return true;           // no constraint
-      if (!values || values.length === 0) return false;  // constrained but no data
+      if (min==null && max==null) return true;
+      if (!values || values.length === 0) return false;
       for (const v of values){
         if (v == null || Number.isNaN(v)) continue;
-        if ((min==null || v >= min) && (max==null || v <= max)) return true; // any value in range passes
+        if ((min==null || v >= min) && (max==null || v <= max)) return true;
       }
       return false;
     }
@@ -375,7 +379,7 @@ async function loadAndRender(){
     const dx = e.clientX - startX;
     const newWidth = Math.max(240, startWidth + dx);
     const total = container.getBoundingClientRect().width;
-    const pct = Math.min(85, Math.max(15, (newWidth / total) * 100)); // clamp 15–85%
+    const pct = Math.min(85, Math.max(15, (newWidth / total) * 100));
     container.style.gridTemplateColumns = `${pct}% 8px ${100 - pct}%`;
   };
   const onMouseUp = () => { dragging = false; document.body.style.userSelect = ''; };
