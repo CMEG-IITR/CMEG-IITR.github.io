@@ -1,4 +1,4 @@
-<!doctype html>
+<! doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -12,11 +12,11 @@
       transition: background 0.3s, color 0.3s;
     }
     header {
-      background: #003366; color: #fff; padding: 20px; text-align: center;
+      background: #003366; color: #fff; padding:  20px; text-align:  center;
       display: flex; flex-direction: column; align-items: center;
     }
     nav { margin-top: 10px; }
-    nav a { color: #fff; margin: 0 12px; text-decoration: none; font-weight: 500; }
+    nav a { color: #fff; margin:  0 12px; text-decoration: none; font-weight:  500; }
     main { max-width: 900px; margin: 40px auto; padding: 0 20px; }
     .block {
       border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin: 20px 0;
@@ -29,8 +29,8 @@
     body.dark { background: #121212; color: #eee; }
     body.dark header { background: #111; color: #fff; }
     body.dark nav a { color: #ddd; }
-    body.dark .block { background: #1e1e1e; border-color: #444; }
-    body.dark footer { background: #1e1e1e; color: #aaa; }
+    body.dark . block { background: #1e1e1e; border-color:  #444; }
+    body. dark footer { background: #1e1e1e; color: #aaa; }
 
     #toggle-btn {
       margin-top: 10px;
@@ -48,6 +48,7 @@
     <nav>
       <a href="/">Home</a>
       <a href="thermoelectric_dataset">Thermoelectric Dataset</a>
+      <a href="demo/psp_demo.html">PSP Demo</a>
     </nav>
     <button id="toggle-btn">🌙 Dark Mode</button>
   </header>
@@ -77,13 +78,13 @@
     const btn = document.getElementById('toggle-btn');
 
     // Load saved mode
-    if (localStorage.getItem('theme') === 'dark') {
+    if (localStorage. getItem('theme') === 'dark') {
       body.classList.add('dark');
       btn.textContent = "☀️ Light Mode";
     }
 
     btn.addEventListener('click', () => {
-      body.classList.toggle('dark');
+      body.classList. toggle('dark');
       if (body.classList.contains('dark')) {
         btn.textContent = "☀️ Light Mode";
         localStorage.setItem('theme', 'dark');
